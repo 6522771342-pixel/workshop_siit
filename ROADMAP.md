@@ -24,10 +24,11 @@ This document outlines the development progress and future plans for the Smart L
 - [x] Mood Tracker: 7-day trend line chart.
 - [x] Responsive chart layouts.
 
-## 🔜 Phase 5: Proactive Logic & Smart Alerts
-- [ ] Implement "Break Reminders" based on schedule density.
-- [ ] Add "Mood Insights" (e.g., encouragement when feeling low).
-- [ ] Notification system (Browser-based alerts).
+## ✅ Phase 5: Proactive Logic & Smart Alerts
+- [x] Implement "Break Reminders" based on schedule density.
+- [x] Add "Mood Insights" (e.g., encouragement when feeling low).
+- [x] Custom toast notification system.
+- [x] Pulse animation for important alerts.
 
 ## 🔜 Phase 6: Advanced Task Management
 - [ ] Task Priorities (Low, Medium, High) with color coding.

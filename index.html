@@ -11,9 +11,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .active-nav { @apply bg-indigo-50 text-indigo-600 font-semibold; }
+        .pulse-alert { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .8; transform: scale(1.02); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex">
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
 
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r border-slate-200 fixed h-full hidden md:block z-20">
@@ -83,18 +89,91 @@
             lucide.createIcons();
         }
 
+        function generateInsights() {
+            const insights = [];
+            
+            // Mood Insight
+            const lastMoods = state.moods.slice(-3);
+            if (lastMoods.length >= 2) {
+                const recentSad = lastMoods.every(m => m.mood === '😢' || m.mood === '😕');
+                if (recentSad) {
+                    insights.push({
+                        title: "Mindfulness Check",
+                        text: "You've been feeling a bit down lately. Why not take a short walk or call a friend?",
+                        type: "mood",
+                        icon: "heart"
+                    });
+                }
+            }
+
+            // Schedule Density Insight
+            if (state.schedule.length > 3) {
+                insights.push({
+                    title: "Busy Day Ahead",
+                    text: "Your schedule is looking packed. Make sure to stay hydrated and take eye breaks!",
+                    type: "schedule",
+                    icon: "zap"
+                });
+            }
+
+            // Tasks Insight
+            const pendingTasks = state.tasks.filter(t => !t.completed).length;
+            if (pendingTasks > 5) {
+                insights.push({
+                    title: "Task Overload",
+                    text: `You have ${pendingTasks} pending tasks. Try breaking them into smaller steps.`,
+                    type: "task",
+                    icon: "check-circle"
+                });
+            }
+
+            if (insights.length === 0) {
+                insights.push({
+                    title: "You're doing great!",
+                    text: "Your life balance looks stable. Keep up the amazing work!",
+                    type: "positive",
+                    icon: "sparkles"
+                });
+            }
+
+            return insights;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const icons = { success: 'check-circle', info: 'info', warning: 'alert-circle' };
+            const colors = { success: 'bg-green-500', info: 'bg-blue-500', warning: 'bg-amber-500' };
+            
+            toast.className = `${colors[type]} text-white px-6 py-3 rounded-xl shadow-lg animate-in slide-in-from-right-full flex items-center gap-2 pointer-events-auto`;
+            toast.innerHTML = `<i data-lucide="${icons[type]}" size="18"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.classList.add('animate-out', 'fade-out', 'slide-out-to-right-full');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
         function renderDashboard(container) {
             const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             const todayStr = new Date().toISOString().split('T')[0];
             const todayMood = state.moods.find(m => m.date === todayStr)?.mood || '❓';
             const completedTasks = state.tasks.filter(t => t.completed).length;
+            const insights = generateInsights();
 
             container.innerHTML = `
                 <div class="space-y-8">
-                    <header>
-                        <h2 class="text-3xl font-bold text-slate-800">Welcome Back!</h2>
-                        <p class="text-slate-500 mt-1">${today}</p>
+                    <header class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-3xl font-bold text-slate-800">Welcome Back!</h2>
+                            <p class="text-slate-500 mt-1">${today}</p>
+                        </div>
                     </header>
+                    
+                    <!-- Stats -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="p-3 bg-yellow-50 rounded-xl text-yellow-600"><i data-lucide="sun"></i></div>
@@ -109,17 +188,47 @@
                             <div><p class="text-sm text-slate-500">Events</p><p class="text-xl font-bold">${state.schedule.length}</p></div>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2 bg-indigo-600 p-8 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div>
-                                <h3 class="text-2xl font-bold mb-2">Ready for a productive day?</h3>
-                                <p class="text-indigo-100">You have ${state.tasks.filter(t=>!t.completed).length} tasks pending and ${state.schedule.length} upcoming events.</p>
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- Main Banner -->
+                            <div class="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div>
+                                    <h3 class="text-2xl font-bold mb-2">Ready for a productive day?</h3>
+                                    <p class="text-indigo-100">You have ${state.tasks.filter(t=>!t.completed).length} tasks pending and ${state.schedule.length} upcoming events.</p>
+                                </div>
+                                <button onclick="switchView('tasks')" class="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors whitespace-nowrap">Manage Tasks</button>
                             </div>
-                            <button onclick="switchView('tasks')" class="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors">Manage Tasks</button>
+
+                            <!-- Smart Insights -->
+                            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i data-lucide="sparkles" class="text-indigo-500"></i> Smart Insights
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${insights.map(insight => `
+                                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex gap-4 ${insight.type !== 'positive' ? 'pulse-alert border-amber-100' : ''}">
+                                            <div class="p-2 rounded-xl h-fit ${insight.type === 'positive' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}">
+                                                <i data-lucide="${insight.icon}" size="20"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">${insight.title}</h4>
+                                                <p class="text-sm text-slate-500 mt-1">${insight.text}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>
-                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                            <h3 class="font-bold text-slate-800 mb-4 text-center">Time Distribution</h3>
-                            <canvas id="timeChart"></canvas>
+
+                        <!-- Side Content -->
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                <h3 class="font-bold text-slate-800 mb-4 text-center">Time Distribution</h3>
+                                <div class="h-48">
+                                    <canvas id="timeChart"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,7 +263,9 @@
                     }]
                 },
                 options: {
-                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 10, boxWidth: 6, font: { size: 10 } } } },
                     cutout: '70%'
                 }
             });
@@ -288,16 +399,19 @@
             if (!input.value.trim()) return;
             state.tasks.push({ text: input.value, completed: false });
             saveState();
+            showToast('Task added successfully!');
         };
 
         window.toggleTask = (i) => {
             state.tasks[i].completed = !state.tasks[i].completed;
             saveState();
+            if (state.tasks[i].completed) showToast('Task completed! 🎉');
         };
 
         window.deleteTask = (i) => {
             state.tasks.splice(i, 1);
             saveState();
+            showToast('Task deleted', 'info');
         };
 
         window.addSchedule = () => {
@@ -306,11 +420,13 @@
             if (!title.value || !time.value) return;
             state.schedule.push({ title: title.value, time: time.value });
             saveState();
+            showToast('Event added to schedule');
         };
 
         window.deleteSchedule = (i) => {
             state.schedule.splice(i, 1);
             saveState();
+            showToast('Event removed', 'info');
         };
 
         window.setMood = (mood) => {
@@ -318,7 +434,7 @@
             const others = state.moods.filter(m => m.date !== today);
             state.moods = [...others, { date: today, mood }];
             saveState();
-            alert('Mood updated! Keep shining ✨');
+            showToast(`Mood updated to ${mood}! ✨`);
         };
 
         // Init
