@@ -66,13 +66,13 @@
         </nav>
         
         <div class="p-4 border-t border-slate-100 dark:border-slate-800">
-            <button id="dark-mode-btn" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors dark:text-slate-400 dark:hover:bg-slate-800">
+            <button onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors dark:text-slate-400 dark:hover:bg-slate-800">
                 <div class="flex items-center gap-3 pointer-events-none">
                     <i id="theme-icon" data-lucide="moon"></i>
                     <span id="theme-text">Dark Mode</span>
                 </div>
-                <div id="theme-toggle" class="w-10 h-5 bg-slate-200 rounded-full relative transition-colors dark:bg-indigo-600 pointer-events-none">
-                    <div class="absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform dark:translate-x-5"></div>
+                <div class="w-10 h-5 bg-slate-200 rounded-full relative transition-colors dark:bg-indigo-600 pointer-events-none">
+                    <div id="theme-toggle-dot" class="absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform"></div>
                 </div>
             </button>
         </div>
@@ -91,14 +91,12 @@
             tasks: [],
             moods: [],
             schedule: [],
-            settings: {
-                darkMode: false
-            }
+            settings: { darkMode: false }
         };
 
         // UI States
         let taskFilter = 'all';
-        let currentView = 'dashboard'; // Always default to dashboard on load
+        let currentView = 'dashboard'; // Force dashboard on refresh
 
         function saveState() {
             localStorage.setItem('smartlife-vanilla-data', JSON.stringify(state));
@@ -111,22 +109,30 @@
             applyTheme(state.settings.darkMode);
             saveState();
             showToast(state.settings.darkMode ? 'Dark mode enabled 🌙' : 'Light mode enabled ☀️', 'info');
-        }
+        };
 
         function applyTheme(isDark) {
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            
+            console.log('Applying theme, dark:', isDark);
+            const html = document.documentElement;
+            const dot = document.getElementById('theme-toggle-dot');
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
-            if (icon && text) {
-                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-                text.innerText = isDark ? 'Light Mode' : 'Dark Mode';
-                if (window.lucide) lucide.createIcons();
+
+            if (isDark) {
+                html.classList.add('dark');
+                if (dot) dot.style.transform = 'translateX(20px)';
+                if (icon) icon.setAttribute('data-lucide', 'sun');
+                if (text) text.innerText = 'Light Mode';
+            } else {
+                html.classList.remove('dark');
+                if (dot) dot.style.transform = 'translateX(0px)';
+                if (icon) icon.setAttribute('data-lucide', 'moon');
+                if (text) text.innerText = 'Dark Mode';
             }
+            
+            try {
+                if (window.lucide) window.lucide.createIcons();
+            } catch (e) { console.warn('Lucide icons not ready'); }
         }
 
         // View Switching
@@ -144,7 +150,7 @@
             }
             
             render();
-        }
+        };
 
         // Renderers
         function render() {
@@ -850,7 +856,6 @@
 
         // Init
         applyTheme(state.settings.darkMode);
-        document.getElementById('dark-mode-btn').addEventListener('click', window.toggleDarkMode);
         render();
     </script>
 </body>
