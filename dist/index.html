@@ -105,7 +105,7 @@
         }
 
         // Dark Mode Logic
-        function initTheme() {
+        window.initTheme = function() {
             if (state.settings.darkMode) {
                 document.documentElement.classList.add('dark');
                 updateThemeUI(true);
@@ -115,7 +115,7 @@
             }
         }
 
-        function toggleDarkMode() {
+        window.toggleDarkMode = function() {
             state.settings.darkMode = !state.settings.darkMode;
             document.documentElement.classList.toggle('dark');
             updateThemeUI(state.settings.darkMode);
@@ -129,13 +129,17 @@
             if (icon && text) {
                 icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
                 text.innerText = isDark ? 'Light Mode' : 'Dark Mode';
-                lucide.createIcons();
+                try {
+                    if (window.lucide) lucide.createIcons();
+                } catch (e) {
+                    console.error('Lucide error:', e);
+                }
             }
         }
 
         // View Switching
         let currentView = 'dashboard';
-        function switchView(view) {
+        window.switchView = function(view) {
             currentView = view;
             document.querySelectorAll('nav button').forEach(btn => {
                 btn.classList.remove('active-nav', 'bg-indigo-50', 'text-indigo-600', 'font-semibold', 'dark:bg-indigo-900/40', 'dark:text-indigo-400');
