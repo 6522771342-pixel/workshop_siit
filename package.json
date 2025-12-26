@@ -4,7 +4,7 @@
   "scripts": {
     "build": "npm run build:candy && npm run build:life && cp index.html dist/",
     "build:candy": "cd candy-crush && npm install && npm run build",
-    "build:life": "cd smart-life && npm install && npm run build",
+    "build:life": "mkdir -p dist/smart-life && cp smart-life/index.html dist/smart-life/",
     "postinstall": "npm run build"
   },
   "devDependencies": {
