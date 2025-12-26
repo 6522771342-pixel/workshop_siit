@@ -36,10 +36,11 @@ This document outlines the development progress and future plans for the Smart L
 - [x] Unique ID system for stable task management.
 - [x] "Clear Completed" utility.
 
-## 🔜 Phase 7: Data Management & Customization
-- [ ] Backup & Restore (Export/Import JSON data).
-- [ ] Dark Mode support.
-- [ ] Customizable theme colors.
+## ✅ Phase 7: Data Management & Customization
+- [x] Backup & Restore (Export/Import JSON data).
+- [x] Dark Mode support.
+- [x] Settings view for centralized management.
+- [x] Persistent theme preference.
 
 ---
 *Last Updated: 2025-12-26*
