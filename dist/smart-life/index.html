@@ -6,6 +6,7 @@
     <title>SmartLife Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -108,15 +109,55 @@
                             <div><p class="text-sm text-slate-500">Events</p><p class="text-xl font-bold">${state.schedule.length}</p></div>
                         </div>
                     </div>
-                    <div class="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div>
-                            <h3 class="text-2xl font-bold mb-2">Ready for a productive day?</h3>
-                            <p class="text-indigo-100">You have ${state.tasks.filter(t=>!t.completed).length} tasks pending and ${state.schedule.length} upcoming events.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-indigo-600 p-8 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div>
+                                <h3 class="text-2xl font-bold mb-2">Ready for a productive day?</h3>
+                                <p class="text-indigo-100">You have ${state.tasks.filter(t=>!t.completed).length} tasks pending and ${state.schedule.length} upcoming events.</p>
+                            </div>
+                            <button onclick="switchView('tasks')" class="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors">Manage Tasks</button>
                         </div>
-                        <button onclick="switchView('tasks')" class="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors">Manage Tasks</button>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4 text-center">Time Distribution</h3>
+                            <canvas id="timeChart"></canvas>
+                        </div>
                     </div>
                 </div>
             `;
+            setTimeout(initDashboardChart, 0);
+        }
+
+        function initDashboardChart() {
+            const ctx = document.getElementById('timeChart');
+            if (!ctx) return;
+
+            const counts = {};
+            state.schedule.forEach(s => {
+                const type = s.type || 'other';
+                counts[type] = (counts[type] || 0) + 1;
+            });
+
+            if (Object.keys(counts).length === 0) {
+                ctx.parentElement.innerHTML += '<p class="text-slate-400 text-center text-sm py-10">Add schedule items to see distribution</p>';
+                ctx.remove();
+                return;
+            }
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#6366f1', '#a855f7', '#22c55e', '#f97316', '#ec4899', '#64748b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+                    cutout: '70%'
+                }
+            });
         }
 
         function renderTasks(container) {
@@ -178,6 +219,14 @@
                             </button>
                         `).join('')}
                     </div>
+                    <div class="max-w-4xl mx-auto bg-white p-8 rounded-3xl border border-slate-200 mt-8 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                            <i data-lucide="trending-up" class="text-indigo-500"></i> Mood Trend
+                        </h3>
+                        <div class="h-64">
+                            <canvas id="moodChart"></canvas>
+                        </div>
+                    </div>
                     <div class="max-w-md mx-auto bg-white p-6 rounded-2xl border border-slate-200 mt-8">
                         <h3 class="font-bold mb-4">Mood History</h3>
                         <div class="space-y-2">
@@ -191,6 +240,46 @@
                     </div>
                 </div>
             `;
+            setTimeout(initMoodChart, 0);
+        }
+
+        function initMoodChart() {
+            const ctx = document.getElementById('moodChart');
+            if (!ctx) return;
+
+            const moodMap = { '😢': 1, '😕': 2, '😐': 3, '🙂': 4, '🤩': 5 };
+            const last7Days = state.moods.slice(-7);
+            
+            if (last7Days.length < 2) {
+                ctx.parentElement.innerHTML = '<p class="text-slate-400 text-center py-20">Log your mood for a few days to see trends</p>';
+                return;
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days.map(m => m.date.split('-').slice(1).join('/')),
+                    datasets: [{
+                        label: 'Happiness Level',
+                        data: last7Days.map(m => moodMap[m.mood]),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#6366f1',
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 1, max: 5, ticks: { stepSize: 1, callback: (v) => ['','😢', '😕', '😐', '🙂', '🤩'][v] } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
         }
 
         // Actions
