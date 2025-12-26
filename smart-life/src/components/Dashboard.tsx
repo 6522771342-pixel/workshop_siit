@@ -39,16 +39,28 @@ export function Dashboard() {
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 className="text-lg font-bold text-slate-800 mb-6">Today's Schedule</h3>
           <div className="space-y-4">
-             {data.schedule.map(item => (
+             {data.schedule.map(item => {
+                // Simple logic to check if current time is within this item's window
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const [startH, startM] = item.startTime.split(':').map(Number);
+                const startMinutes = startH * 60 + startM;
+                const endMinutes = startMinutes + item.durationMinutes;
+                
+                const isActive = currentMinutes >= startMinutes && currentMinutes < endMinutes;
+
+                return (
                  <ScheduleItem 
                     key={item.id}
                     time={item.startTime} 
                     title={item.title} 
                     type={item.type as any} 
-                    duration={`${item.durationMinutes}m`} 
+                    duration={`${item.durationMinutes}m`}
+                    isActive={isActive}
                  />
-             ))}
-             {data.schedule.length === 0 && <p className="text-slate-400 text-center py-4">No schedule set for today.</p>}
+                );
+             })}
+             {data.schedule.length === 0 && <p className="text-slate-400 text-center py-4">No schedule set for today. Go to 'Schedule' tab to add one.</p>}
           </div>
         </div>
 
@@ -97,19 +109,25 @@ function StatCard({ title, value, icon }: { title: string, value: string, icon: 
   )
 }
 
-function ScheduleItem({ time, title, type, duration }: { time: string, title: string, type: 'work' | 'break' | 'meeting', duration: string }) {
+function ScheduleItem({ time, title, type, duration, isActive }: { time: string, title: string, type: 'work' | 'break' | 'meeting' | 'meal' | 'personal' | 'sleep', duration: string, isActive?: boolean }) {
   const colors = {
     work: 'bg-blue-100 text-blue-700 border-blue-200',
     break: 'bg-green-100 text-green-700 border-green-200',
     meeting: 'bg-purple-100 text-purple-700 border-purple-200',
+    meal: 'bg-orange-100 text-orange-700 border-orange-200',
+    personal: 'bg-pink-100 text-pink-700 border-pink-200',
+    sleep: 'bg-indigo-100 text-indigo-700 border-indigo-200',
   };
 
   return (
-    <div className="flex gap-4 items-start group">
-      <div className="w-20 pt-1 text-sm text-slate-500 font-medium text-right">{time}</div>
-      <div className={`flex-1 p-4 rounded-xl border ${colors[type]} transition-transform group-hover:-translate-y-0.5`}>
+    <div className={`flex gap-4 items-start group ${isActive ? 'scale-[1.02] transition-transform' : ''}`}>
+      <div className={`w-20 pt-1 text-sm font-medium text-right ${isActive ? 'text-indigo-600 font-bold' : 'text-slate-500'}`}>{time}</div>
+      <div className={`flex-1 p-4 rounded-xl border ${colors[type]} ${isActive ? 'ring-2 ring-indigo-500 ring-offset-2' : ''} transition-all`}>
         <div className="flex justify-between items-center">
-          <h4 className="font-bold">{title}</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-bold">{title}</h4>
+            {isActive && <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>}
+          </div>
           <span className="text-xs font-bold opacity-70 px-2 py-1 rounded-full bg-white/50">{duration}</span>
         </div>
       </div>

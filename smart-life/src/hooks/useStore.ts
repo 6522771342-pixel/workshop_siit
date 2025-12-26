@@ -76,10 +76,27 @@ export function useStore() {
     });
   };
 
+  const addScheduleItem = (item: Omit<ScheduleItem, 'id'>) => {
+    const newItem: ScheduleItem = { ...item, id: crypto.randomUUID() };
+    setData(prev => ({
+      ...prev,
+      schedule: [...prev.schedule, newItem].sort((a, b) => a.startTime.localeCompare(b.startTime))
+    }));
+  };
+
+  const deleteScheduleItem = (id: string) => {
+    setData(prev => ({
+      ...prev,
+      schedule: prev.schedule.filter(i => i.id !== id)
+    }));
+  };
+
   return {
     data,
     addTask,
     toggleTask,
-    addMood
+    addMood,
+    addScheduleItem,
+    deleteScheduleItem
   };
 }
