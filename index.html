@@ -493,41 +493,43 @@
                         <h3 class="font-bold mb-4 flex items-center gap-2 dark:text-slate-100">
                             <i data-lucide="plus-circle" class="text-indigo-500" size="18"></i> New Activity
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Title</label>
-                                <input id="sched-title" type="text" placeholder="e.g. Deep Work" class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
+                        <form onsubmit="event.preventDefault(); addSchedule();" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Title</label>
+                                    <input id="sched-title" type="text" placeholder="e.g. Deep Work" required class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Start Time</label>
+                                    <input id="sched-time" type="time" required class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Duration</label>
+                                    <select id="sched-duration" class="w-full p-3 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
+                                        <option value="15">15 min</option>
+                                        <option value="30">30 min</option>
+                                        <option value="45">45 min</option>
+                                        <option value="60" selected>1 Hour</option>
+                                        <option value="90">1.5 Hours</option>
+                                        <option value="120">2 Hours</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Type</label>
+                                    <select id="sched-type" class="w-full p-3 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
+                                        <option value="work">💼 Work</option>
+                                        <option value="meeting">👥 Meeting</option>
+                                        <option value="break">☕ Break</option>
+                                        <option value="meal">🍽️ Meal</option>
+                                        <option value="personal">🏠 Personal</option>
+                                        <option value="sleep">😴 Sleep</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Start Time</label>
-                                <input id="sched-time" type="time" class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Duration</label>
-                                <select id="sched-duration" class="w-full p-3 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
-                                    <option value="15">15 min</option>
-                                    <option value="30">30 min</option>
-                                    <option value="45">45 min</option>
-                                    <option value="60" selected>1 Hour</option>
-                                    <option value="90">1.5 Hours</option>
-                                    <option value="120">2 Hours</option>
-                                </select>
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Type</label>
-                                <select id="sched-type" class="w-full p-3 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
-                                    <option value="work">💼 Work</option>
-                                    <option value="meeting">👥 Meeting</option>
-                                    <option value="break">☕ Break</option>
-                                    <option value="meal">🍽️ Meal</option>
-                                    <option value="personal">🏠 Personal</option>
-                                    <option value="sleep">😴 Sleep</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button onclick="addSchedule()" class="w-full mt-6 bg-indigo-600 text-white p-4 rounded-xl font-bold hover:bg-indigo-700 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-200 dark:shadow-none">
-                            Add to Timeline
-                        </button>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold hover:bg-indigo-700 transition-all transform active:scale-[0.98] shadow-lg shadow-indigo-200 dark:shadow-none">
+                                Add to Timeline
+                            </button>
+                        </form>
                     </div>
 
                     <!-- Timeline -->
@@ -800,31 +802,43 @@
         };
 
         window.addSchedule = () => {
-            const titleInput = document.getElementById('sched-title');
-            const timeInput = document.getElementById('sched-time');
-            const durationInput = document.getElementById('sched-duration');
-            const typeInput = document.getElementById('sched-type');
+            console.log('Attempting to add schedule item...');
+            const titleEl = document.getElementById('sched-title');
+            const timeEl = document.getElementById('sched-time');
+            const durationEl = document.getElementById('sched-duration');
+            const typeEl = document.getElementById('sched-type');
 
-            if (!titleInput.value || !timeInput.value) {
+            if (!titleEl || !timeEl) {
+                console.error('Required elements not found in DOM');
+                return;
+            }
+
+            const title = titleEl.value.trim();
+            const time = timeEl.value;
+            const duration = durationEl ? durationEl.value : '60';
+            const type = typeEl ? typeEl.value : 'work';
+
+            console.log('Values:', { title, time, duration, type });
+
+            if (!title || !time) {
                 showToast('Please fill in title and time', 'warning');
                 return;
             }
 
             const newEvent = {
                 id: Date.now().toString(),
-                title: titleInput.value,
-                time: timeInput.value,
-                duration: durationInput.value,
-                type: typeInput.value,
+                title: title,
+                time: time,
+                duration: duration,
+                type: type,
                 createdAt: new Date().toISOString()
             };
 
             state.schedule.push(newEvent);
             saveState();
-            showToast('Event added to schedule! 📅');
+            showToast('Event added to timeline! 📅');
             
-            // Clear inputs
-            titleInput.value = '';
+            // The inputs will be cleared automatically because saveState() triggers render()
         };
 
         window.deleteSchedule = (id) => {
