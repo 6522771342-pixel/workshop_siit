@@ -2,5 +2,4 @@ name = "workshopsiit"
 compatibility_date = "2025-12-26"
 
 [assets]
-directory = "."
-binding = "ASSETS"
+directory = "dist"
