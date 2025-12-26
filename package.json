@@ -4,6 +4,10 @@
   "scripts": {
     "build": "npm run build:candy && npm run build:life && cp index.html dist/",
     "build:candy": "cd candy-crush && npm install && npm run build",
-    "build:life": "cd smart-life && npm install && npm run build"
+    "build:life": "cd smart-life && npm install && npm run build",
+    "postinstall": "npm run build"
+  },
+  "devDependencies": {
+    "wrangler": "^3.101.0"
   }
 }
