@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/candy-crush/',
   build: {
-    outDir: '../dist/candy-crush',
+    outDir: '../assets_dir/candy-crush',
     emptyOutDir: true
   },
   resolve: {
