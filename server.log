@@ -1,0 +1,9 @@
+
+> candy-crush-clone@0.0.0 dev
+> vite --host 0.0.0.0
+
+
+  VITE v7.3.0  ready in 206 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://10.0.10.12:5173/
