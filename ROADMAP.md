@@ -30,10 +30,11 @@ This document outlines the development progress and future plans for the Smart L
 - [x] Custom toast notification system.
 - [x] Pulse animation for important alerts.
 
-## 🔜 Phase 6: Advanced Task Management
-- [ ] Task Priorities (Low, Medium, High) with color coding.
-- [ ] Category-based filtering for tasks.
-- [ ] "Clear Completed" utility.
+## ✅ Phase 6: Advanced Task Management
+- [x] Task Priorities (Low, Medium, High) with color coding.
+- [x] Category-based filtering for tasks.
+- [x] Unique ID system for stable task management.
+- [x] "Clear Completed" utility.
 
 ## 🔜 Phase 7: Data Management & Customization
 - [ ] Backup & Restore (Export/Import JSON data).

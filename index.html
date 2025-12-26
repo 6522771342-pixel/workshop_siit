@@ -59,6 +59,9 @@
             schedule: []
         };
 
+        // UI States
+        let taskFilter = 'all';
+
         function saveState() {
             localStorage.setItem('smartlife-vanilla-data', JSON.stringify(state));
             render();
@@ -272,22 +275,82 @@
         }
 
         function renderTasks(container) {
+            let filteredTasks = state.tasks;
+            if (taskFilter === 'active') filteredTasks = state.tasks.filter(t => !t.completed);
+            else if (taskFilter === 'completed') filteredTasks = state.tasks.filter(t => t.completed);
+
+            const priorityColors = {
+                high: 'text-red-600 bg-red-50 border-red-100',
+                medium: 'text-amber-600 bg-amber-50 border-amber-100',
+                low: 'text-emerald-600 bg-emerald-50 border-emerald-100'
+            };
+
             container.innerHTML = `
-                <div class="space-y-6 max-w-2xl">
-                    <h2 class="text-3xl font-bold">Tasks</h2>
-                    <div class="flex gap-2">
-                        <input id="task-input" type="text" placeholder="Add new task..." class="flex-1 p-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500">
-                        <button onclick="addTask()" class="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700"><i data-lucide="plus"></i></button>
+                <div class="space-y-6 max-w-3xl">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-3xl font-bold">Tasks</h2>
+                        <div class="flex gap-2">
+                            <button onclick="setTaskFilter('all')" class="px-3 py-1 text-sm rounded-lg ${taskFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200'}">All</button>
+                            <button onclick="setTaskFilter('active')" class="px-3 py-1 text-sm rounded-lg ${taskFilter === 'active' ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200'}">Active</button>
+                            <button onclick="setTaskFilter('completed')" class="px-3 py-1 text-sm rounded-lg ${taskFilter === 'completed' ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200'}">Done</button>
+                        </div>
                     </div>
+
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <input id="task-input" type="text" placeholder="What needs to be done?" class="flex-1 p-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500">
+                            <div class="flex gap-2">
+                                <select id="task-priority" class="p-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="low">Low Priority</option>
+                                    <option value="medium" selected>Med Priority</option>
+                                    <option value="high">High Priority</option>
+                                </select>
+                                <select id="task-category" class="p-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="work">Work</option>
+                                    <option value="personal">Personal</option>
+                                    <option value="health">Health</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <button onclick="addTask()" class="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-colors">
+                                    <i data-lucide="plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="space-y-3">
-                        ${state.tasks.map((t, i) => `
-                            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-3 group">
-                                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${i})" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                                <span class="flex-1 ${t.completed ? 'line-through text-slate-400' : 'text-slate-700'}">${t.text}</span>
-                                <button onclick="deleteTask(${i})" class="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="trash-2" size="18"></i></button>
+                        ${filteredTasks.map((t) => `
+                            <div class="bg-white p-4 rounded-2xl border border-slate-200 flex items-center gap-4 group transition-all hover:border-indigo-200 hover:shadow-sm">
+                                <button onclick="toggleTask('${t.id}')" class="transition-colors ${t.completed ? 'text-green-500' : 'text-slate-300 hover:text-indigo-500'}">
+                                    <i data-lucide="${t.completed ? 'check-circle' : 'circle'}" size="24"></i>
+                                </button>
+                                <div class="flex-1">
+                                    <span class="block ${t.completed ? 'line-through text-slate-400' : 'text-slate-700 font-medium'}">${t.text}</span>
+                                    <div class="flex gap-2 mt-1">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${priorityColors[t.priority || 'medium']}">${t.priority || 'medium'}</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">${t.category || 'other'}</span>
+                                    </div>
+                                </div>
+                                <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i data-lucide="trash-2" size="18"></i>
+                                </button>
                             </div>
                         `).join('')}
+                        
+                        ${filteredTasks.length === 0 ? `
+                            <div class="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                                <p class="text-slate-400">No tasks found. Time to relax? 🌴</p>
+                            </div>
+                        ` : ''}
                     </div>
+
+                    ${state.tasks.some(t => t.completed) ? `
+                        <div class="flex justify-center pt-4">
+                            <button onclick="clearCompleted()" class="text-sm text-slate-400 hover:text-red-500 flex items-center gap-2 transition-colors">
+                                <i data-lucide="eraser" size="16"></i> Clear Completed Tasks
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }
@@ -394,24 +457,53 @@
         }
 
         // Actions
+        window.setTaskFilter = (filter) => {
+            taskFilter = filter;
+            render();
+        };
+
         window.addTask = () => {
             const input = document.getElementById('task-input');
+            const priority = document.getElementById('task-priority').value;
+            const category = document.getElementById('task-category').value;
+            
             if (!input.value.trim()) return;
-            state.tasks.push({ text: input.value, completed: false });
+            
+            const newTask = {
+                id: Date.now().toString(),
+                text: input.value,
+                completed: false,
+                priority: priority,
+                category: category,
+                createdAt: new Date().toISOString()
+            };
+
+            state.tasks.push(newTask);
             saveState();
             showToast('Task added successfully!');
         };
 
-        window.toggleTask = (i) => {
-            state.tasks[i].completed = !state.tasks[i].completed;
-            saveState();
-            if (state.tasks[i].completed) showToast('Task completed! 🎉');
+        window.toggleTask = (id) => {
+            const task = state.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveState();
+                if (task.completed) showToast('Task completed! 🎉');
+            }
         };
 
-        window.deleteTask = (i) => {
-            state.tasks.splice(i, 1);
+        window.deleteTask = (id) => {
+            state.tasks = state.tasks.filter(t => t.id !== id);
             saveState();
             showToast('Task deleted', 'info');
+        };
+
+        window.clearCompleted = () => {
+            const initialCount = state.tasks.length;
+            state.tasks = state.tasks.filter(t => !t.completed);
+            const deletedCount = initialCount - state.tasks.length;
+            saveState();
+            showToast(`Cleared ${deletedCount} completed tasks`, 'info');
         };
 
         window.addSchedule = () => {
