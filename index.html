@@ -478,6 +478,10 @@
             };
 
             const sortedSchedule = [...state.schedule].sort((a, b) => a.time.localeCompare(b.time));
+            
+            // Get current time for default value
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
             container.innerHTML = `
                 <div class="space-y-8 max-w-4xl mx-auto">
@@ -497,11 +501,11 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">Title</label>
-                                    <input id="sched-title" type="text" placeholder="e.g. Deep Work" required class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
+                                    <input id="sched-title" type="text" placeholder="e.g. Deep Work" class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">Start Time</label>
-                                    <input id="sched-time" type="time" required class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
+                                    <input id="sched-time" type="time" value="${currentTime}" class="w-full p-3 rounded-xl border border-slate-200 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:text-white">
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">Duration</label>
@@ -802,23 +806,17 @@
         };
 
         window.addSchedule = () => {
-            console.log('Attempting to add schedule item...');
             const titleEl = document.getElementById('sched-title');
             const timeEl = document.getElementById('sched-time');
             const durationEl = document.getElementById('sched-duration');
             const typeEl = document.getElementById('sched-type');
 
-            if (!titleEl || !timeEl) {
-                console.error('Required elements not found in DOM');
-                return;
-            }
+            if (!titleEl || !timeEl) return;
 
             const title = titleEl.value.trim();
             const time = timeEl.value;
             const duration = durationEl ? durationEl.value : '60';
             const type = typeEl ? typeEl.value : 'work';
-
-            console.log('Values:', { title, time, duration, type });
 
             if (!title || !time) {
                 showToast('Please fill in title and time', 'warning');
@@ -837,8 +835,6 @@
             state.schedule.push(newEvent);
             saveState();
             showToast('Event added to timeline! 📅');
-            
-            // The inputs will be cleared automatically because saveState() triggers render()
         };
 
         window.deleteSchedule = (id) => {
