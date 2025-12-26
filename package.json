@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "wrangler pages dev .",
-    "build": "echo 'No build needed'",
+    "build": "mkdir -p dist && cp index.html dist/",
     "deploy": "wrangler deploy"
   }
 }
