@@ -66,7 +66,7 @@
         </nav>
         
         <div class="p-4 border-t border-slate-100 dark:border-slate-800">
-            <button onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors dark:text-slate-400 dark:hover:bg-slate-800">
+            <button onclick="window.toggleDarkMode()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors dark:text-slate-400 dark:hover:bg-slate-800">
                 <div class="flex items-center gap-3 pointer-events-none">
                     <i id="theme-icon" data-lucide="moon"></i>
                     <span id="theme-text">Dark Mode</span>
@@ -96,7 +96,7 @@
 
         // UI States
         let taskFilter = 'all';
-        let currentView = 'dashboard'; // Force dashboard on refresh
+        let currentView = 'dashboard';
 
         function saveState() {
             localStorage.setItem('smartlife-vanilla-data', JSON.stringify(state));
@@ -104,15 +104,7 @@
         }
 
         // Dark Mode Logic
-        window.toggleDarkMode = function() {
-            state.settings.darkMode = !state.settings.darkMode;
-            applyTheme(state.settings.darkMode);
-            saveState();
-            showToast(state.settings.darkMode ? 'Dark mode enabled 🌙' : 'Light mode enabled ☀️', 'info');
-        };
-
         function applyTheme(isDark) {
-            console.log('Applying theme, dark:', isDark);
             const html = document.documentElement;
             const dot = document.getElementById('theme-toggle-dot');
             const icon = document.getElementById('theme-icon');
@@ -132,8 +124,15 @@
             
             try {
                 if (window.lucide) window.lucide.createIcons();
-            } catch (e) { console.warn('Lucide icons not ready'); }
+            } catch (e) {}
         }
+
+        window.toggleDarkMode = function() {
+            state.settings.darkMode = !state.settings.darkMode;
+            applyTheme(state.settings.darkMode);
+            saveState();
+            showToast(state.settings.darkMode ? 'Dark mode enabled 🌙' : 'Light mode enabled ☀️', 'info');
+        };
 
         // View Switching
         window.switchView = function(view) {
